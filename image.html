@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Image | Gallery</title>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/1829/1829586.png" type="image/png">
+
+  <style>
+    :root {
+      --primary: #6e48aa;
+      --secondary: #9d50bb;
+      --accent: #4776e6;
+      --text-light: rgba(255, 255, 255, 0.9);
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+      background-size: 400% 400%;
+      overflow-x: hidden;
+      perspective: 1000px;
+      animation: gradientBG 15s ease infinite;
+      font-family: 'Arial', sans-serif;
+      color: var(--text-light);
+      touch-action: manipulation;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .gallery-container {
+      position: relative;
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      perspective: 1000px;
+      padding: 20px;
+    }
+
+    .image-frame {
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      min-height: 300px;
+      aspect-ratio: 3/2;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+      padding: 15px;
+      margin-bottom: 30px;
+      transform-style: preserve-3d;
+      transition: transform 0.5s ease, box-shadow 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      overflow: hidden;
+    }
+
+    .image-frame:active {
+      cursor: grabbing;
+    }
+
+    .image-frame.tilt {
+      transform: rotateY(var(--rotateY)) rotateX(var(--rotateX)) scale(1.02);
+      box-shadow: 0 35px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    #random-img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      border-radius: 10px;
+      object-fit: contain;
+      transition: transform 0.5s ease;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      transform: translateZ(0);
+    }
+
+    .image-frame.tilt #random-img {
+      transform: translateZ(30px) scale(1.05);
+    }
+
+    button {
+      padding: 12px 30px;
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+      outline: none;
+    }
+
+    button:hover, button:focus {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(45deg, var(--secondary), var(--accent));
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, var(--accent), var(--primary));
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    button:hover::before, button:focus::before {
+      opacity: 1;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+      transform: translateZ(50px);
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .floating-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: float linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(-100vh) rotate(360deg); }
+    }
+
+    /* Mobile specific styles */
+    @media (max-width: 768px) {
+      .image-frame {
+        min-height: 250px;
+        padding: 10px;
+      }
+      
+      button {
+        padding: 10px 25px;
+        font-size: 14px;
+      }
+      
+      .gallery-container {
+        padding: 10px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .image-frame {
+        min-height: 200px;
+        border-radius: 15px;
+      }
+      
+      h1 {
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-particles" id="particles"></div>
+  
+  <div class="gallery-container">
+    <h1>3D Image Gallery</h1>
+    
+    <div class="image-frame" id="image-frame">
+      <img src="https://img.freepik.com/free-photo/portrait-lion-ai-generated_268835-4278.jpg?w=826&t=st=1699336540~exp=1699337140~hmac=eefb9cf13d7ccde6923cff38ce1a24a30579b08de99e4186643d90b600a881f1" alt="Random Image" id="random-img">
+    </div>
+    
+    <button id="randomize-btn">Show Another Image</button>
+  </div>
+
+  <script>
+    // Image array
+    const images = [
+      'https://img.freepik.com/free-photo/portrait-lion-ai-generated_268835-4278.jpg?w=826&t=st=1699336540~exp=1699337140~hmac=eefb9cf13d7ccde6923cff38ce1a24a30579b08de99e4186643d90b600a881f1',
+      'https://images.unsplash.com/photo-1504208434309-cb69f4fe52b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+      'https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+      'https://images.unsplash.com/photo-1511497584788-876760111969?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+      'https://images.unsplash.com/photo-1501854140801-50d01698950b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+      // New images added below
+      'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 
+      'https://images.unsplash.com/photo-1470114716159-e389f8712fda?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 
+      'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 
+      'https://images.unsplash.com/photo-1429087969512-1e85aab2683d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 
+      'https://images.unsplash.com/photo-1518098268026-4e89f1a2cd8e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 
+      'https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+      'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+      'https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'  
+    ];
+
+    // DOM elements
+    const imgElement = document.getElementById('random-img');
+    const imageFrame = document.getElementById('image-frame');
+    const randomizeBtn = document.getElementById('randomize-btn');
+
+    function setRandomImage() {
+      // Get current image
+      const currentImg = imgElement.src;
+      
+      // Filter out current image
+      let availableImages = images.filter(img => img !== currentImg);
+      
+      // If all images have been shown, reset the array
+      if (availableImages.length === 0) {
+        availableImages = [...images];
+      }
+      
+      // Get random image
+      const randomIndex = Math.floor(Math.random() * availableImages.length);
+      const randomImageUrl = availableImages[randomIndex];
+      
+      // Apply animation
+      imgElement.style.opacity = '0';
+      imgElement.style.transform = 'rotateY(90deg) translateZ(0)';
+      imageFrame.classList.remove('tilt');
+      
+      // Change image after animation
+      setTimeout(() => {
+        imgElement.src = randomImageUrl;
+        imgElement.style.opacity = '1';
+        imgElement.style.transform = 'rotateY(0) translateZ(0)';
+        
+        // Reapply tilt after image change
+        setTimeout(() => {
+          imageFrame.classList.add('tilt');
+        }, 100);
+      }, 300);
+    }
+
+    // Create floating particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = window.innerWidth < 768 ? 20 : 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random size
+        const size = Math.random() * (window.innerWidth < 768 ? 8 : 10) + 3;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        
+        // Random animation
+        const duration = Math.random() * 20 + 10;
+        const delay = Math.random() * 5;
+        particle.style.animation = `float ${duration}s linear ${delay}s infinite`;
+        
+        // Random opacity
+        particle.style.opacity = Math.random() * 0.5 + 0.1;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    // 3D tilt effect
+    function setupTiltEffect() {
+      const frame = imageFrame;
+      
+      // Mouse movement
+      frame.addEventListener('mousemove', (e) => {
+        const rect = frame.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const rotateY = (x - centerX) / 20;
+        const rotateX = (centerY - y) / 20;
+        
+        frame.style.setProperty('--rotateY', `${rotateY}deg`);
+        frame.style.setProperty('--rotateX', `${rotateX}deg`);
+        frame.classList.add('tilt');
+      });
+      
+      frame.addEventListener('mouseleave', () => {
+        frame.style.removeProperty('--rotateY');
+        frame.style.removeProperty('--rotateX');
+        frame.classList.remove('tilt');
+      });
+      
+      // Touch movement for mobile
+      frame.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = frame.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const rotateY = (x - centerX) / 15;
+        const rotateX = (centerY - y) / 15;
+        
+        frame.style.setProperty('--rotateY', `${rotateY}deg`);
+        frame.style.setProperty('--rotateX', `${rotateX}deg`);
+        frame.classList.add('tilt');
+      });
+      
+      frame.addEventListener('touchend', () => {
+        frame.style.removeProperty('--rotateY');
+        frame.style.removeProperty('--rotateX');
+        frame.classList.remove('tilt');
+      });
+    }
+    
+    // Initialize
+    window.addEventListener('DOMContentLoaded', function() {
+      createParticles();
+      setupTiltEffect();
+      randomizeBtn.addEventListener('click', setRandomImage);
+      
+      // Add initial tilt
+      setTimeout(() => {
+        imageFrame.classList.add('tilt');
+      }, 500);
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      const particlesContainer = document.getElementById('particles');
+      particlesContainer.innerHTML = '';
+      createParticles();
+    });
+  </script>
+</body>
+</html>
